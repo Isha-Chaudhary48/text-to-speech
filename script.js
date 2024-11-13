@@ -1,8 +1,9 @@
 const text = document.getElementById("text")
 const play = document.getElementById("play")
-const pause = document.getElementById("pause")
-const stop = document.getElementById("stop")
+const pauseButton = document.getElementById("pause")
+const stopButton = document.getElementById("stop")
 const speed = document.getElementById("speech")
+let currentCharacter
 
 play.addEventListener('click',()=>
 {
@@ -14,18 +15,31 @@ play.addEventListener('click',()=>
     console.log(text.value)
     
 })
-pause.addEventListener('click',pauseContent)
-function playText(textContent)
-{
-   const utterance = new SpeechSynthesisUtterance(textContent)
-   utterance.rate = speed.value || 1 //specify speed
+pauseButton.addEventListener('click',pauseContent)
+stopButton.addEventListener('click',stopContent)
+speed.addEventListener('input',()=>{
+    stopContent()
+    playText(utterance.text.substring(currentCharacter))
+})
+
+const utterance = new SpeechSynthesisUtterance()
    utterance.addEventListener('end',()=>{
     text.disabled = false
    })
-   console.log(utterance)
+   utterance.addEventListener('boundary',e=>{
+     currentCharacter = e.charIndex 
+   })
 
-   text.disabled = true
-   speechSynthesis.speak(utterance)
+function playText(textContent)
+{ 
+    if(speechSynthesis.speaking && speechSynthesis.paused)
+        {
+         return speechSynthesis.resume()
+        }
+    utterance.text= textContent
+    utterance.rate = speed.value || 1 //specify speed
+    text.disabled = true
+    speechSynthesis.speak(utterance)
    
 }
 
@@ -35,4 +49,9 @@ function pauseContent()
     {
         speechSynthesis.pause()
     }
+}
+ 
+function stopContent(){
+    speechSynthesis.cancel()
+
 }
